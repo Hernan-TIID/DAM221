@@ -2,11 +2,11 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Módulo Cocina - Catálogo de Productos</title>
+  <title>Módulo Cocina - Catálogo y Preparación en Tiempo Real</title>
 </head>
 <body>
 
-  <h1>Módulo de Cocina: Catálogo</h1>
+  <h1>Módulo de Cocina: Catálogo y Simulador</h1>
 
   <!-- FORMULARIO DE CATÁLOGO -->
   <h2>Gestión de Producto</h2>
@@ -23,14 +23,59 @@
       <input type="number" id="precio" step="0.5" required>
     </div>
     <br>
-    <!-- El botón de submit debe ser el único encargado de enviar -->
-<button type="submit" id="btn-guardar">Agregar Producto</button>
-
-<!-- OBLIGATORIO: type="button" evita que este botón recargue la página -->
-<button type="button" id="btn-cancelar" style="display: none;">Cancelar Edición</button>
+    <div>
+      <label for="categoria">Categoría:</label>
+      <select id="categoria" required>
+        <option value="bebida">Bebida</option>
+        <option value="postre">Postre</option>
+        <option value="platillo">Platillo</option>
+      </select>
+    </div>
+    <br>
+    <button type="submit" id="btn-guardar">Agregar Producto</button>
+    <button type="button" id="btn-cancelar" style="display: none;">Cancelar Edición</button>
   </form>
 
   <hr>
+
+  <!-- PANEL DE PREPARACIÓN EN TIEMPO REAL -->
+  <h2>⏱️ Área de Preparación en Vivo</h2>
+  <div>
+    <h3>Estado: <span id="status-label">Ninguna orden en proceso</span></h3>
+    <p>
+      Progreso: 
+      <progress id="progress-bar" value="0" max="100"></progress>
+      <span id="porcentaje-text">0%</span>
+    </p>
+
+    <!-- Fieldset nativo para alertas aleatorias -->
+    <fieldset id="panel-alertas" style="display: none;">
+      <legend>⚠️ Notificación de Cocina</legend>
+      <p id="alerta-mensaje"></p>
+    </fieldset>
+  </div>
+
+  <hr>
+
+  <!-- SECCIÓN DE BÚSQUEDA Y FILTROS -->
+  <h2>Filtros y Búsqueda</h2>
+  <div>
+    <label for="input-buscar">Buscar por nombre:</label>
+    <input type="text" id="input-buscar" placeholder="Ej: Café...">
+
+    &nbsp;&nbsp;
+
+    <label for="select-filtro">Filtrar por:</label>
+    <select id="select-filtro">
+      <option value="todos">Todos los productos</option>
+      <option value="baratos">Productos Baratos (≤ $50)</option>
+      <option value="caros">Productos Caros (> $50)</option>
+      <option value="bebida">Solo Bebidas</option>
+      <option value="postre">Solo Postres</option>
+    </select>
+  </div>
+
+  <br>
 
   <!-- TABLA DE CATÁLOGO -->
   <h2>Productos Disponibles</h2>
@@ -40,6 +85,7 @@
         <th>ID</th>
         <th>Nombre</th>
         <th>Precio</th>
+        <th>Categoría</th>
         <th>Acciones</th>
       </tr>
     </thead>

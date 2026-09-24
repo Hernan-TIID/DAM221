@@ -1,126 +1,247 @@
+// Helper básico de espera
+const esperar = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 // ==========================================
-// 1. CLASE Y LÓGICA DEL MÓDULO DE COCINA (POO)
+// 1. ESTADO Y DATOS (Array Global)
 // ==========================================
-class ModuloCocina {
-  constructor() {
-    this.productos = []; // Catálogo de productos disponibles
-    this.siguienteId = 1;
-  }
+let productos = [
+  { id: 1, nombre: "Café Americano", precio: 35, categoria: "bebida" },
+  { id: 2, nombre: "Pastel de Chocolate", precio: 75, categoria: "postre" },
+  { id: 3, nombre: "Té Verde", precio: 40, categoria: "bebida" },
+  { id: 4, nombre: "Cheesecake", precio: 90, categoria: "postre" }
+];
 
-  // AGREGAR: Solo requiere nombre y precio
-  agregar(nombre, precio) {
-    const nuevo = {
-      id: this.siguienteId++,
-      nombre: nombre,
-      precio: parseFloat(precio)
-    };
-    this.productos.push(nuevo);
-  }
+let siguienteId = 5;
+let enPreparacion = false;
 
-  // EDITAR: Modifica nombre o precio del catálogo
-  editar(id, nombre, precio) {
-    const prod = this.productos.find(p => p.id === id);
-    if (prod) {
-      prod.nombre = nombre;
-      prod.precio = parseFloat(precio);
-    }
-  }
+// ==========================================
+// 2. LÓGICA DE BÚSQUEDA Y FILTROS (find / filter)
+// ==========================================
 
-  // ELIMINAR
-  eliminar(id) {
-    this.productos = this.productos.filter(p => p.id !== id);
-  }
+// Búsqueda con FIND
+function obtenerPorId(id) {
+  return productos.find((p) => p.id === id);
+}
 
-  obtenerPorId(id) {
-    return this.productos.find(p => p.id === id);
+// Filtros con FILTER
+function obtenerBaratos(limite = 50) {
+  return productos.filter((p) => p.precio <= limite);
+}
+
+function obtenerCaros(limite = 50) {
+  return productos.filter((p) => p.precio > limite);
+}
+
+function obtenerPorCategoria(cat) {
+  return productos.filter((p) => p.categoria.toLowerCase() === cat.toLowerCase());
+}
+
+function eliminarProducto(id) {
+  if (confirm(`¿Eliminar producto con ID ${id}?`)) {
+    productos = productos.filter((p) => p.id !== id);
+    aplicarFiltros();
   }
 }
 
-// Instancia global
-const cocina = new ModuloCocina();
-
 // ==========================================
-// 2. MANEJO DEL DOM
+// 3. SIMULACIÓN DE PREPARACIÓN EN TIEMPO REAL
 // ==========================================
-const form = document.getElementById('form-producto');
-const inputId = document.getElementById('producto-id');
-const inputNombre = document.getElementById('nombre');
-const inputPrecio = document.getElementById('precio');
-const btnGuardar = document.getElementById('btn-guardar');
-const btnCancelar = document.getElementById('btn-cancelar');
-const tablaBody = document.getElementById('tabla-body');
-
-function renderizarTabla() {
-  tablaBody.innerHTML = ''; // Limpia filas anteriores
-
-  if (cocina.productos.length === 0) {
-    tablaBody.innerHTML = '<tr><td colspan="4">No hay productos en el catálogo.</td></tr>';
+async function iniciarPreparacion(id) {
+  if (enPreparacion) {
+    alert("Ya hay una preparación en curso.");
     return;
   }
 
-  cocina.productos.forEach(prod => {
-    const tr = document.createElement('tr');
+  const producto = obtenerPorId(id); // Uso de find()
+  if (!producto) return;
+
+  enPreparacion = true;
+  ocultarAlerta();
+
+  const etapas = producto.categoria === "bebida"
+    ? ["Moliendo ingredientes", "Calentando / Mezclando", "Sirviendo"]
+    : ["Preparando masa", "Horneando", "Decorando y sirviendo"];
+
+  let i = 0;
+  let reinicios = 0;
+
+  actualizarEstado(`Iniciando ${producto.nombre}...`, 0);
+
+  while (i < etapas.length) {
+    const porcentaje = Math.round((i / etapas.length) * 100);
+    actualizarEstado(`Paso ${i + 1}/${etapas.length}: ${etapas[i]}...`, porcentaje);
+
+    await esperar(2000); // 2 segundos por etapa
+
+    // 25% de probabilidad de alerta aleatoria
+    if (Math.random() < 0.25) {
+      const azar = Math.random();
+
+      // Caso PAUSA (50% de las alertas)
+      if (azar < 0.5) {
+        mostrarAlerta("⏸️ PAUSA: Faltan ingredientes (Consiguiendo insumos...)");
+        await esperar(3000); // Pausa de 3 segundos
+        ocultarAlerta();
+        continue; // Repite la misma etapa
+      } 
+      // Caso REINICIO (50% de las alertas)
+      else {
+        reinicios++;
+        if (reinicios > 2) {
+          actualizarEstado("❌ Cancelado: Demasiados errores en cocina", 0);
+          mostrarAlerta("🚫 Cancelado por fallas críticas consecutivas");
+          enPreparacion = false;
+          return;
+        }
+
+        mostrarAlerta(`💥 ALERTA (Reinicio #${reinicios}): Se tiró el plato. Reiniciando...`);
+        actualizarEstado("Reiniciando preparación desde el paso 1...", 0);
+        await esperar(1500);
+        ocultarAlerta();
+        i = 0; // Reinicia al paso 1
+        continue;
+      }
+    }
+
+    i++; // Siguiente etapa
+  }
+
+  actualizarEstado(`🎉 ¡${producto.nombre} listo para entregar!`, 100);
+  enPreparacion = false;
+}
+
+// ==========================================
+// 4. MANEJO DEL DOM Y VISTA
+// ==========================================
+const form = document.getElementById("form-producto");
+const inputId = document.getElementById("producto-id");
+const inputNombre = document.getElementById("nombre");
+const inputPrecio = document.getElementById("precio");
+const selectCategoria = document.getElementById("categoria");
+const btnGuardar = document.getElementById("btn-guardar");
+const btnCancelar = document.getElementById("btn-cancelar");
+const tablaBody = document.getElementById("tabla-body");
+
+// Filtros y UI de estado
+const inputBuscar = document.getElementById("input-buscar");
+const selectFiltro = document.getElementById("select-filtro");
+const statusLabel = document.getElementById("status-label");
+const progressBar = document.getElementById("progress-bar");
+const porcentajeText = document.getElementById("porcentaje-text");
+const panelAlertas = document.getElementById("panel-alertas");
+const alertaMensaje = document.getElementById("alerta-mensaje");
+
+function renderizarTabla(lista = productos) {
+  tablaBody.innerHTML = "";
+
+  if (lista.length === 0) {
+    tablaBody.innerHTML = '<tr><td colspan="5">No hay productos en la lista.</td></tr>';
+    return;
+  }
+
+  lista.forEach((p) => {
+    const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${prod.id}</td>
-      <td>${prod.nombre}</td>
-      <td>$${prod.precio.toFixed(2)}</td>
+      <td>${p.id}</td>
+      <td>${p.nombre}</td>
+      <td>$${p.precio.toFixed(2)}</td>
+      <td>${p.categoria}</td>
       <td>
-        <button onclick="prepararEdicion(${prod.id})">Editar</button>
-        <button onclick="eliminarProducto(${prod.id})">Eliminar</button>
+        <button onclick="iniciarPreparacion(${p.id})">🍳 Preparar</button>
+        <button onclick="prepararEdicion(${p.id})">Editar</button>
+        <button onclick="eliminarProducto(${p.id})">Eliminar</button>
       </td>
     `;
     tablaBody.appendChild(tr);
   });
 }
 
-form.addEventListener('submit', (e) => {
+function aplicarFiltros() {
+  let resultado = productos;
+  const filtro = selectFiltro.value;
+
+  if (filtro === "baratos") resultado = obtenerBaratos(50);
+  else if (filtro === "caros") resultado = obtenerCaros(50);
+  else if (filtro === "bebida" || filtro === "postre") resultado = obtenerPorCategoria(filtro);
+
+  const texto = inputBuscar.value.trim().toLowerCase();
+  if (texto !== "") {
+    resultado = resultado.filter((p) => p.nombre.toLowerCase().includes(texto));
+  }
+
+  renderizarTabla(resultado);
+}
+
+// Guardar / Editar
+form.addEventListener("submit", (e) => {
   e.preventDefault();
 
   const id = inputId.value;
   const nombre = inputNombre.value;
-  const precio = inputPrecio.value;
+  const precio = parseFloat(inputPrecio.value);
+  const categoria = selectCategoria.value;
 
   if (id) {
-    cocina.editar(parseInt(id), nombre, precio);
+    // Editar existente
+    const prod = obtenerPorId(parseInt(id)); // Uso de find()
+    if (prod) {
+      prod.nombre = nombre;
+      prod.precio = precio;
+      prod.categoria = categoria;
+    }
   } else {
-    cocina.agregar(nombre, precio);
+    // Agregar nuevo
+    productos.push({ id: siguienteId++, nombre, precio, categoria });
   }
 
   resetearFormulario();
-  renderizarTabla();
+  aplicarFiltros();
 });
 
 function prepararEdicion(id) {
-  const prod = cocina.obtenerPorId(id);
+  const prod = obtenerPorId(id);
   if (prod) {
     inputId.value = prod.id;
     inputNombre.value = prod.nombre;
     inputPrecio.value = prod.precio;
-
+    selectCategoria.value = prod.categoria;
     btnGuardar.textContent = "Guardar Cambios";
     btnCancelar.style.display = "inline";
   }
 }
 
-function eliminarProducto(id) {
-  if (confirm(`¿Eliminar producto con ID ${id}?`)) {
-    cocina.eliminar(id);
-    renderizarTabla();
-  }
-}
-
 function resetearFormulario() {
   form.reset();
-  inputId.value = '';
+  inputId.value = "";
   btnGuardar.textContent = "Agregar Producto";
   btnCancelar.style.display = "none";
 }
 
-btnCancelar.addEventListener('click', resetearFormulario);
+// Auxiliares de UI para el progreso y alertas
+function actualizarEstado(mensaje, porcentaje) {
+  statusLabel.textContent = mensaje;
+  progressBar.value = porcentaje;
+  porcentajeText.textContent = `${porcentaje}%`;
+}
 
-// EXPOSICIÓN AL ÁMBITO GLOBAL PARA EVENTOS ONCLICK EN EL DOM
+function mostrarAlerta(mensaje) {
+  alertaMensaje.textContent = mensaje;
+  panelAlertas.style.display = "block";
+}
+
+function ocultarAlerta() {
+  panelAlertas.style.display = "none";
+}
+
+// Listeners de eventos de filtrado y cancelación
+inputBuscar.addEventListener("input", aplicarFiltros);
+selectFiltro.addEventListener("change", aplicarFiltros);
+btnCancelar.addEventListener("click", resetearFormulario);
+
+// Exposición al DOM para eventos onclick
+window.iniciarPreparacion = iniciarPreparacion;
 window.prepararEdicion = prepararEdicion;
 window.eliminarProducto = eliminarProducto;
 
-// Renderizado inicial
+// Render inicial
 renderizarTabla();
