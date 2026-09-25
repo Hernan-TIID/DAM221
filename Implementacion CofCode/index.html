@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema Restaurante</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; background-color: #f9f9f9; }
+    section { background: white; padding: 15px; border-radius: 6px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #eee; }
+    .card-item { border: 1px solid #ddd; padding: 10px; margin: 5px 0; display: flex; justify-content: space-between; align-items: center; }
+    button { cursor: pointer; padding: 5px 10px; margin-right: 2px; }
+  </style>
+</head>
+<body>
+
+  <h1>🔍 Sistema Restaurante</h1>
+
+  <!-- 1. MÓDULO DE COCINA -->
+  <section>
+    <h2>1. Módulo de Cocina: Catálogo de Productos</h2>
+    <form id="form-cocina-agregar">
+      <input type="hidden" id="cocina-id">
+      <label>Nombre: <input type="text" id="cocina-nombre" required></label>
+      <label>Precio ($): <input type="number" id="cocina-precio" step="0.50" required></label>
+      <button type="submit" id="btn-cocina-guardar">Agregar al Catálogo</button>
+    </form>
+
+    <h3>Productos en Catálogo</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Precio</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-cocina-body"></tbody>
+    </table>
+
+    <h3>Monitor de Preparación en Vivo</h3>
+    <div id="contenedor-ordenes-cocina">
+      <p style="color: #777;">No hay órdenes en proceso...</p>
+    </div>
+  </section>
+
+  <!-- 2. MÓDULO CLIENTE -->
+  <section>
+    <h2>2. Módulo Cliente: Realizar Pedido</h2>
+    <div>
+      <label>Nombre del Cliente: <input type="text" id="cliente-nombre" placeholder="Ej. Maria"></label>
+    </div>
+
+    <h3>Menú Disponible</h3>
+    <div id="menu-cliente-contenedor"></div>
+
+    <h3>🛒 Carrito de Compras</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Precio Un.</th>
+          <th>Cantidad</th>
+          <th>Subtotal</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-carrito-body"></tbody>
+    </table>
+    <p><b>Total Carrito: $<span id="total-carrito">0.00</span></b></p>
+    
+    <button type="button" id="btn-confirmar-pedido">Confirmar y Enviar a Caja</button>
+    <button type="button" id="btn-vaciar-carrito">Vaciar Carrito</button>
+  </section>
+
+  <!-- 3. MÓDULO CAJA -->
+  <section>
+    <h2>3. Módulo Caja: Pedidos Pendientes de Pago</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID Pedido</th>
+          <th>Cliente</th>
+          <th>Detalle / Ítems</th>
+          <th>Total</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-caja-body">
+        <tr><td colspan="6">No hay registros de ventas.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- CARGA DEL SCRIPT PRINCIPAL -->
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

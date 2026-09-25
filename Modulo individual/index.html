@@ -2,52 +2,123 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Módulo Cocina - Catálogo de Productos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema Integrado de Restaurante / Tienda</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f6f9; }
+    nav { margin-bottom: 20px; display: flex; gap: 10px; }
+    nav button { padding: 12px 20px; font-weight: bold; cursor: pointer; border: none; background: #007bff; color: white; border-radius: 5px; }
+    nav button:hover { background: #0056b3; }
+    .modulo-seccion { display: none; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .card-producto { border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 5px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    th { background-color: #f2f2f2; }
+  </style>
 </head>
 <body>
 
-  <h1>Módulo de Cocina: Catálogo</h1>
+  <h1>🍽️ Sistema Integrado de Ventas y Cocina</h1>
 
-  <!-- FORMULARIO DE CATÁLOGO -->
-  <h2>Gestión de Producto</h2>
-  <form id="form-producto">
-    <input type="hidden" id="producto-id">
+  <!-- BARRA DE NAVEGACIÓN GLOBAL -->
+  <nav>
+    <button id="nav-cliente">🛒 Módulo Cliente</button>
+    <button id="nav-caja">💵 Módulo Caja</button>
+    <button id="nav-cocina">👨‍🍳 Módulo Cocina e Inventario</button>
+  </nav>
 
+  <!-- 1. VISTA MÓDULO CLIENTE -->
+  <section id="sec-cliente" class="modulo-seccion">
+    <h2>Menú Digital (Cliente)</h2>
     <div>
-      <label for="nombre">Nombre del producto:</label>
-      <input type="text" id="nombre" required>
+      <label for="input-nombre-cliente"><b>Tu Nombre:</b></label>
+      <input type="text" id="input-nombre-cliente" placeholder="Ej: Maria">
     </div>
-    <br>
-    <div>
-      <label for="precio">Precio ($):</label>
-      <input type="number" id="precio" step="0.5" required>
+    
+    <h3>Productos Disponibles</h3>
+    <div id="menu-productos-cliente"></div>
+
+    <hr>
+    <h3>Tu Pedido</h3>
+    <ul id="lista-carrito"></ul>
+    <button id="btn-enviar-pedido-cliente" disabled>🔥 Enviar Pedido a Cocina y Caja</button>
+  </section>
+
+  <!-- 2. VISTA MÓDULO CAJA -->
+  <section id="sec-caja" class="modulo-seccion">
+    <h2>Módulo de Caja (Finanzas y Cobros)</h2>
+    <h3>Historial de Ventas Registradas</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Folio</th>
+          <th>Cliente</th>
+          <th>Subtotal</th>
+          <th>Total (+IVA)</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-caja-ventas"></tbody>
+    </table>
+  </section>
+
+  <!-- 3. VISTA MÓDULO COCINA E INVENTARIO -->
+  <section id="sec-cocina" class="modulo-seccion">
+    <div id="seccion-cocina">
+      <h2>🍳 Monitor de Preparación en Vivo</h2>
+      <div id="contenedor-ordenes-cocina"></div>
+
+      <hr>
+
+      <h2>👨‍🍳 Administración de Catálogo e Inventario</h2>
+      <form id="form-producto">
+        <input type="hidden" id="producto-id">
+        <div>
+          <input type="text" id="nombre" placeholder="Nombre del producto" required>
+          <input type="number" id="precio" step="0.5" placeholder="Precio ($)" required>
+          <select id="categoria" required>
+            <option value="bebida">Bebida</option>
+            <option value="postre">Postre</option>
+            <option value="platillo">Platillo</option>
+          </select>
+          <input type="number" id="stock" placeholder="Stock inicial" value="10" required>
+          <button type="submit" id="btn-guardar">Guardar Producto</button>
+        </div>
+      </form>
+
+      <br>
+
+      <div style="display: none;">
+        <input type="text" id="input-buscar">
+        <select id="select-filtro"><option value="todos">Todos</option></select>
+        <button id="btn-cancelar"></button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Categoría</th>
+            <th>Stock</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-body"></tbody>
+      </table>
     </div>
-    <br>
-    <!-- El botón de submit debe ser el único encargado de enviar -->
-<button type="submit" id="btn-guardar">Agregar Producto</button>
+  </section>
 
-<!-- OBLIGATORIO: type="button" evita que este botón recargue la página -->
-<button type="button" id="btn-cancelar" style="display: none;">Cancelar Edición</button>
-  </form>
+  <!-- CARGA DEL ORQUESTADOR (ES MODULES) -->
+  <script type="module">
+    import { cambiarModulo } from './main.js';
 
-  <hr>
-
-  <!-- TABLA DE CATÁLOGO -->
-  <h2>Productos Disponibles</h2>
-  <table border="1" cellpadding="5">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Nombre</th>
-        <th>Precio</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody id="tabla-body">
-      <!-- Se llena dinámicamente desde JS -->
-    </tbody>
-  </table>
-
-  <script src="ModuloCocina.js"></script>
+    // Conectar botones del NAV con la función de cambio de módulo
+    document.getElementById('nav-cliente').onclick = () => cambiarModulo('sec-cliente');
+    document.getElementById('nav-caja').onclick = () => cambiarModulo('sec-caja');
+    document.getElementById('nav-cocina').onclick = () => cambiarModulo('sec-cocina');
+  </script>
 </body>
 </html>
