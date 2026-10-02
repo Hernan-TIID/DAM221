@@ -1,247 +1,178 @@
-// Helper básico de espera
-const esperar = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+// Helper de espera basado en Promesas
+export const esperar = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // ==========================================
-// 1. ESTADO Y DATOS (Array Global)
+// 1. BASE DE DATOS / MENÚ BASE DE COCINA
 // ==========================================
-let productos = [
-  { id: 1, nombre: "Café Americano", precio: 35, categoria: "bebida" },
-  { id: 2, nombre: "Pastel de Chocolate", precio: 75, categoria: "postre" },
-  { id: 3, nombre: "Té Verde", precio: 40, categoria: "bebida" },
-  { id: 4, nombre: "Cheesecake", precio: 90, categoria: "postre" }
+export const menuCocina = [
+  { id: 1, nombre: "Café Americano", categoria: "bebida" },
+  { id: 2, nombre: "Pastel de Chocolate", categoria: "postre" },
+  { id: 3, nombre: "Té Verde", categoria: "bebida" },
+  { id: 4, nombre: "Cheesecake", categoria: "postre" },
+  { id: 5, nombre: "Hamburguesa", categoria: "platillo" }
 ];
 
-let siguienteId = 5;
-let enPreparacion = false;
-
-// ==========================================
-// 2. LÓGICA DE BÚSQUEDA Y FILTROS (find / filter)
-// ==========================================
+let contadorPedidos = 1;
 
 // Búsqueda con FIND
-function obtenerPorId(id) {
-  return productos.find((p) => p.id === id);
+export function buscarPlatilloPorId(id) {
+  return menuCocina.find((p) => p.id === id);
 }
 
-// Filtros con FILTER
-function obtenerBaratos(limite = 50) {
-  return productos.filter((p) => p.precio <= limite);
-}
-
-function obtenerCaros(limite = 50) {
-  return productos.filter((p) => p.precio > limite);
-}
-
-function obtenerPorCategoria(cat) {
-  return productos.filter((p) => p.categoria.toLowerCase() === cat.toLowerCase());
-}
-
-function eliminarProducto(id) {
-  if (confirm(`¿Eliminar producto con ID ${id}?`)) {
-    productos = productos.filter((p) => p.id !== id);
-    aplicarFiltros();
-  }
+// Filtro con FILTER
+export function obtenerAlimentosPorCategoria(cat) {
+  return menuCocina.filter((p) => p.categoria.toLowerCase() === cat.toLowerCase());
 }
 
 // ==========================================
-// 3. SIMULACIÓN DE PREPARACIÓN EN TIEMPO REAL
+// 2. LÓGICA DE PREPARACIÓN POR PEDIDO
 // ==========================================
-async function iniciarPreparacion(id) {
-  if (enPreparacion) {
-    alert("Ya hay una preparación en curso.");
-    return;
-  }
+export async function procesarPedido(itemsPedido, callbacks) {
+  const numPedido = contadorPedidos++;
+  const pedidoId = `pedido-${numPedido}`;
 
-  const producto = obtenerPorId(id); // Uso de find()
-  if (!producto) return;
+  // Se notifica a la UI la creación de la tarjeta visual para este pedido
+  callbacks.onCrearTarjeta(pedidoId, numPedido, itemsPedido);
 
-  enPreparacion = true;
-  ocultarAlerta();
+  const totalProductos = itemsPedido.length;
 
-  const etapas = producto.categoria === "bebida"
-    ? ["Moliendo ingredientes", "Calentando / Mezclando", "Sirviendo"]
-    : ["Preparando masa", "Horneando", "Decorando y sirviendo"];
+  // Recorremos SECUENCIALMENTE cada alimento dentro del pedido
+  for (let index = 0; index < totalProductos; index++) {
+    const producto = itemsPedido[index];
 
-  let i = 0;
-  let reinicios = 0;
+    // Se determinan las etapas según la categoría del alimento actual
+    const etapas = producto.categoria === "bebida"
+      ? ["Moliendo / Mezclando", "Calentando", "Sirviendo"]
+      : ["Preparando insumos", "Cocinando", "Emplatando"];
 
-  actualizarEstado(`Iniciando ${producto.nombre}...`, 0);
+    let step = 0;
+    let reintentosAlimento = 0; // Contador de errores INDIVIDUAL por alimento
 
-  while (i < etapas.length) {
-    const porcentaje = Math.round((i / etapas.length) * 100);
-    actualizarEstado(`Paso ${i + 1}/${etapas.length}: ${etapas[i]}...`, porcentaje);
+    while (step < etapas.length) {
+      // Cálculo del porcentaje proporcional del pedido completo
+      const porcentajeGeneral = Math.round(((index + (step / etapas.length)) / totalProductos) * 100);
 
-    await esperar(2000); // 2 segundos por etapa
+      callbacks.onActualizarEstado(
+        pedidoId,
+        `[${index + 1}/${totalProductos}] ${producto.nombre}: Paso ${step + 1}/${etapas.length} (${etapas[step]})`,
+        porcentajeGeneral
+      );
 
-    // 25% de probabilidad de alerta aleatoria
-    if (Math.random() < 0.25) {
-      const azar = Math.random();
+      await esperar(1500); // Simulación de tiempo de preparación por paso
 
-      // Caso PAUSA (50% de las alertas)
-      if (azar < 0.5) {
-        mostrarAlerta("⏸️ PAUSA: Faltan ingredientes (Consiguiendo insumos...)");
-        await esperar(3000); // Pausa de 3 segundos
-        ocultarAlerta();
-        continue; // Repite la misma etapa
-      } 
-      // Caso REINICIO (50% de las alertas)
-      else {
-        reinicios++;
-        if (reinicios > 2) {
-          actualizarEstado("❌ Cancelado: Demasiados errores en cocina", 0);
-          mostrarAlerta("🚫 Cancelado por fallas críticas consecutivas");
-          enPreparacion = false;
-          return;
+      // 25% de probabilidad de error específico en el ALIMENTO ACTUAL
+      if (Math.random() < 0.25) {
+        const tipoError = Math.random();
+
+        // Error 1: Pausa (ej. falta de ingrediente en este alimento)
+        if (tipoError < 0.5) {
+          callbacks.onMostrarAlerta(pedidoId, `⏸️ PAUSA en ${producto.nombre}: Obteniendo insumos...`);
+          await esperar(2500);
+          callbacks.onOcultarAlerta(pedidoId);
+          continue; // Reintenta el mismo paso del producto
+        } 
+        // Error 2: Reintento / Fallo grave (Afecta únicamente a este alimento)
+        else {
+          reintentosAlimento++;
+
+          if (reintentosAlimento > 2) {
+            callbacks.onActualizarEstado(pedidoId, `❌ Cancelado: Demasiados errores en ${producto.nombre}`, 0);
+            callbacks.onMostrarAlerta(pedidoId, `🚫 Pedido cancelado por fallas críticas consecutivas en ${producto.nombre}.`);
+            return; // Se cancela la orden entera por fallas acumuladas
+          }
+
+          callbacks.onMostrarAlerta(
+            pedidoId, 
+            `💥 ERROR en ${producto.nombre} (Intento #${reintentosAlimento}): Se tiró la preparación. Reiniciando este alimento...`
+          );
+          await esperar(2000);
+          callbacks.onOcultarAlerta(pedidoId);
+          
+          step = 0; // Se reinicia únicamente este alimento al paso 1
+          continue;
         }
-
-        mostrarAlerta(`💥 ALERTA (Reinicio #${reinicios}): Se tiró el plato. Reiniciando...`);
-        actualizarEstado("Reiniciando preparación desde el paso 1...", 0);
-        await esperar(1500);
-        ocultarAlerta();
-        i = 0; // Reinicia al paso 1
-        continue;
       }
-    }
 
-    i++; // Siguiente etapa
+      step++; // Avanza a la siguiente etapa del producto actual
+    }
   }
 
-  actualizarEstado(`🎉 ¡${producto.nombre} listo para entregar!`, 100);
-  enPreparacion = false;
+  // Todos los alimentos del pedido fueron preparados exitosamente
+  callbacks.onActualizarEstado(pedidoId, "🎉 ¡Pedido completo y listo para entregar!", 100);
 }
 
 // ==========================================
-// 4. MANEJO DEL DOM Y VISTA
+// 3. MANEJO DEL DOM E INTERACCIÓN VISUAL
 // ==========================================
-const form = document.getElementById("form-producto");
-const inputId = document.getElementById("producto-id");
-const inputNombre = document.getElementById("nombre");
-const inputPrecio = document.getElementById("precio");
-const selectCategoria = document.getElementById("categoria");
-const btnGuardar = document.getElementById("btn-guardar");
-const btnCancelar = document.getElementById("btn-cancelar");
-const tablaBody = document.getElementById("tabla-body");
+const contenedorOrdenes = document.getElementById("contenedor-ordenes");
+const btnPedidoExpress = document.getElementById("btn-pedido-express");
+const btnPedidoGrande = document.getElementById("btn-pedido-grande");
 
-// Filtros y UI de estado
-const inputBuscar = document.getElementById("input-buscar");
-const selectFiltro = document.getElementById("select-filtro");
-const statusLabel = document.getElementById("status-label");
-const progressBar = document.getElementById("progress-bar");
-const porcentajeText = document.getElementById("porcentaje-text");
-const panelAlertas = document.getElementById("panel-alertas");
-const alertaMensaje = document.getElementById("alerta-mensaje");
+// Envía la lista de IDs a la lógica de cocina
+function simularEnvioPedido(idsProductos) {
+  // Uso de FIND para armar la lista de ítems a partir de los IDs
+  const items = idsProductos.map((id) => buscarPlatilloPorId(id)).filter(Boolean);
 
-function renderizarTabla(lista = productos) {
-  tablaBody.innerHTML = "";
+  if (items.length === 0) return;
 
-  if (lista.length === 0) {
-    tablaBody.innerHTML = '<tr><td colspan="5">No hay productos en la lista.</td></tr>';
-    return;
-  }
-
-  lista.forEach((p) => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${p.id}</td>
-      <td>${p.nombre}</td>
-      <td>$${p.precio.toFixed(2)}</td>
-      <td>${p.categoria}</td>
-      <td>
-        <button onclick="iniciarPreparacion(${p.id})">🍳 Preparar</button>
-        <button onclick="prepararEdicion(${p.id})">Editar</button>
-        <button onclick="eliminarProducto(${p.id})">Eliminar</button>
-      </td>
-    `;
-    tablaBody.appendChild(tr);
+  // Llama al proceso asíncrono pasándole las callbacks de renderizado
+  procesarPedido(items, {
+    onCrearTarjeta: renderizarTarjetaPedido,
+    onActualizarEstado: (pedidoId, mensaje, porcentaje) => {
+      document.getElementById(`status-${pedidoId}`).textContent = mensaje;
+      document.getElementById(`progress-${pedidoId}`).value = porcentaje;
+      document.getElementById(`text-${pedidoId}`).textContent = `${porcentaje}%`;
+    },
+    onMostrarAlerta: (pedidoId, msj) => {
+      document.getElementById(`alerta-msg-${pedidoId}`).textContent = msj;
+      document.getElementById(`alerta-${pedidoId}`).style.display = "block";
+    },
+    onOcultarAlerta: (pedidoId) => {
+      document.getElementById(`alerta-${pedidoId}`).style.display = "none";
+    }
   });
 }
 
-function aplicarFiltros() {
-  let resultado = productos;
-  const filtro = selectFiltro.value;
+// Inyección dinámica de la tarjeta del pedido en la pantalla de cocina
+function renderizarTarjetaPedido(pedidoId, numPedido, items) {
+  const sinPedidos = document.getElementById("sin-pedidos");
+  if (sinPedidos) sinPedidos.style.display = "none";
 
-  if (filtro === "baratos") resultado = obtenerBaratos(50);
-  else if (filtro === "caros") resultado = obtenerCaros(50);
-  else if (filtro === "bebida" || filtro === "postre") resultado = obtenerPorCategoria(filtro);
+  const resumenText = items.map((i) => i.nombre).join(" + ");
+  const div = document.createElement("div");
+  div.id = pedidoId;
+  div.style.marginBottom = "15px";
 
-  const texto = inputBuscar.value.trim().toLowerCase();
-  if (texto !== "") {
-    resultado = resultado.filter((p) => p.nombre.toLowerCase().includes(texto));
-  }
+  div.innerHTML = `
+    <fieldset>
+      <legend><b>Pedido #${numPedido} (${items.length} alimentos)</b></legend>
+      <p><b>Ítems:</b> ${resumenText}</p>
+      <p><b>Estado actual:</b> <span id="status-${pedidoId}">En espera...</span></p>
+      <p>
+        Progreso general:
+        <progress id="progress-${pedidoId}" value="0" max="100"></progress>
+        <span id="text-${pedidoId}">0%</span>
+      </p>
 
-  renderizarTabla(resultado);
+      <fieldset id="alerta-${pedidoId}" style="display: none;">
+        <legend>⚠️ Incidencia en Cocina</legend>
+        <p id="alerta-msg-${pedidoId}"></p>
+      </fieldset>
+    </fieldset>
+  `;
+
+  contenedorOrdenes.appendChild(div);
 }
 
-// Guardar / Editar
-form.addEventListener("submit", (e) => {
-  e.preventDefault();
+// Eventos para simular comandas / llegada de pedidos simultáneos
+if (btnPedidoExpress && btnPedidoGrande) {
+  btnPedidoExpress.addEventListener("click", () => {
+    // Pedido 1: Café (bebida) + Cheesecake (postre)
+    simularEnvioPedido([1, 4]);
+  });
 
-  const id = inputId.value;
-  const nombre = inputNombre.value;
-  const precio = parseFloat(inputPrecio.value);
-  const categoria = selectCategoria.value;
-
-  if (id) {
-    // Editar existente
-    const prod = obtenerPorId(parseInt(id)); // Uso de find()
-    if (prod) {
-      prod.nombre = nombre;
-      prod.precio = precio;
-      prod.categoria = categoria;
-    }
-  } else {
-    // Agregar nuevo
-    productos.push({ id: siguienteId++, nombre, precio, categoria });
-  }
-
-  resetearFormulario();
-  aplicarFiltros();
-});
-
-function prepararEdicion(id) {
-  const prod = obtenerPorId(id);
-  if (prod) {
-    inputId.value = prod.id;
-    inputNombre.value = prod.nombre;
-    inputPrecio.value = prod.precio;
-    selectCategoria.value = prod.categoria;
-    btnGuardar.textContent = "Guardar Cambios";
-    btnCancelar.style.display = "inline";
-  }
+  btnPedidoGrande.addEventListener("click", () => {
+    // Pedido 2: Hamburguesa (platillo) + Té Verde (bebida) + Pastel (postre)
+    simularEnvioPedido([5, 3, 2]);
+  });
 }
-
-function resetearFormulario() {
-  form.reset();
-  inputId.value = "";
-  btnGuardar.textContent = "Agregar Producto";
-  btnCancelar.style.display = "none";
-}
-
-// Auxiliares de UI para el progreso y alertas
-function actualizarEstado(mensaje, porcentaje) {
-  statusLabel.textContent = mensaje;
-  progressBar.value = porcentaje;
-  porcentajeText.textContent = `${porcentaje}%`;
-}
-
-function mostrarAlerta(mensaje) {
-  alertaMensaje.textContent = mensaje;
-  panelAlertas.style.display = "block";
-}
-
-function ocultarAlerta() {
-  panelAlertas.style.display = "none";
-}
-
-// Listeners de eventos de filtrado y cancelación
-inputBuscar.addEventListener("input", aplicarFiltros);
-selectFiltro.addEventListener("change", aplicarFiltros);
-btnCancelar.addEventListener("click", resetearFormulario);
-
-// Exposición al DOM para eventos onclick
-window.iniciarPreparacion = iniciarPreparacion;
-window.prepararEdicion = prepararEdicion;
-window.eliminarProducto = eliminarProducto;
-
-// Render inicial
-renderizarTabla();
