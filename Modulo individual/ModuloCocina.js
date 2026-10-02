@@ -5,23 +5,65 @@ export const esperar = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 // 1. BASE DE DATOS / MENÚ BASE DE COCINA
 // ==========================================
 export const menuCocina = [
-  { id: 1, nombre: "Café Americano", categoria: "bebida" },
-  { id: 2, nombre: "Pastel de Chocolate", categoria: "postre" },
-  { id: 3, nombre: "Té Verde", categoria: "bebida" },
-  { id: 4, nombre: "Cheesecake", categoria: "postre" },
-  { id: 5, nombre: "Hamburguesa", categoria: "platillo" }
+  { id: 1, nombre: "Café Americano", precio: 35, categoria: "bebida" },
+  { id: 2, nombre: "Pastel de Chocolate", precio: 75, categoria: "postre" },
+  { id: 3, nombre: "Té Verde", precio: 40, categoria: "bebida" },
+  { id: 4, nombre: "Cheesecake", precio: 90, categoria: "postre" },
+  { id: 5, nombre: "Hamburguesa", precio: 120, categoria: "platillo" }
 ];
 
+let productos = [...menuCocina];
+let siguienteId = menuCocina.length + 1;
 let contadorPedidos = 1;
 
 // Búsqueda con FIND
 export function buscarPlatilloPorId(id) {
-  return menuCocina.find((p) => p.id === id);
+  return productos.find((p) => p.id === id);
+}
+
+export function obtenerPorId(id) {
+  return buscarPlatilloPorId(id);
 }
 
 // Filtro con FILTER
 export function obtenerAlimentosPorCategoria(cat) {
-  return menuCocina.filter((p) => p.categoria.toLowerCase() === cat.toLowerCase());
+  return productos.filter((p) => p.categoria.toLowerCase() === cat.toLowerCase());
+}
+
+export function obtenerPorCategoria(cat) {
+  return obtenerAlimentosPorCategoria(cat);
+}
+
+export function obtenerCatalogoPublico() {
+  return [...productos];
+}
+
+export function obtenerBaratos(limite = 50) {
+  return productos.filter((p) => p.precio <= limite);
+}
+
+export function obtenerCaros(limite = 50) {
+  return productos.filter((p) => p.precio > limite);
+}
+
+export function agregarProductoLogica(nombre, precio, categoria) {
+  const nuevo = { id: siguienteId++, nombre, precio, categoria };
+  productos.push(nuevo);
+  return nuevo;
+}
+
+export function editarProductoLogica(id, nombre, precio, categoria) {
+  const prod = obtenerPorId(id);
+  if (prod) {
+    prod.nombre = nombre;
+    prod.precio = precio;
+    prod.categoria = categoria;
+  }
+  return prod;
+}
+
+export function eliminarProductoLogica(id) {
+  productos = productos.filter((p) => p.id !== id);
 }
 
 // ==========================================
@@ -44,12 +86,23 @@ export async function procesarPedido(itemsPedido, callbacks) {
     const etapas = producto.categoria === "bebida"
       ? ["Moliendo / Mezclando", "Calentando", "Sirviendo"]
       : ["Preparando insumos", "Cocinando", "Emplatando"];
+    const etapas = producto.categoria === "bebida"
+      ? ["Moliendo / Mezclando", "Calentando", "Sirviendo"]
+      : ["Preparando insumos", "Cocinando", "Emplatando"];
 
+    let step = 0;
     let step = 0;
     let reintentosAlimento = 0; // Contador de errores INDIVIDUAL por alimento
 
     while (step < etapas.length) {
       // Cálculo del porcentaje proporcional del pedido completo
+      const porcentajeGeneral = Math.round(((index + (step / etapas.length)) / totalProductos) * 100);
+
+      callbacks.onActualizarEstado(
+        pedidoId,
+        `🍳 Preparando ${producto.nombre} (${etapas[step]}...)`,
+        porcentajeGeneral
+      );
       const porcentajeGeneral = Math.round(((index + (step / etapas.length)) / totalProductos) * 100);
 
       callbacks.onActualizarEstado(
@@ -66,11 +119,11 @@ export async function procesarPedido(itemsPedido, callbacks) {
 
         // Error 1: Pausa (ej. falta de ingrediente en este alimento)
         if (tipoError < 0.5) {
-          callbacks.onMostrarAlerta(pedidoId, `⏸️ PAUSA en ${producto.nombre}: Obteniendo insumos...`);
-          await esperar(2500);
+          callbacks.onMostrarAlerta(pedidoId, `⏸️ PAUSA en ${producto.nombre}: Reabasteciendo insumos...`);
+          await esperar(2000);
           callbacks.onOcultarAlerta(pedidoId);
           continue; // Reintenta el mismo paso del producto
-        } 
+        }
         // Error 2: Reintento / Fallo grave (Afecta únicamente a este alimento)
         else {
           reintentosAlimento++;
@@ -80,15 +133,21 @@ export async function procesarPedido(itemsPedido, callbacks) {
             callbacks.onMostrarAlerta(pedidoId, `🚫 Pedido cancelado por fallas críticas consecutivas en ${producto.nombre}.`);
             return; // Se cancela la orden entera por fallas acumuladas
           }
+          }
 
           callbacks.onMostrarAlerta(
             pedidoId, 
-            `💥 ERROR en ${producto.nombre} (Intento #${reintentosAlimento}): Se tiró la preparación. Reiniciando este alimento...`
+          callbacks.onMostrarAlerta(
+            pedidoId,
+            `💥 INCIDENCIA en ${producto.nombre} (Intento #${reintentosAlimento}): Se tiró la preparación. Reiniciando este alimento...`
+          );
+          await esperar(2000);
+          callbacks.onOcultarAlerta(pedidoId);
           );
           await esperar(2000);
           callbacks.onOcultarAlerta(pedidoId);
           
-          step = 0; // Se reinicia únicamente este alimento al paso 1
+          step = 0; // Se reinicia únicamente este alimento / producto al paso 1
           continue;
         }
       }
@@ -98,6 +157,8 @@ export async function procesarPedido(itemsPedido, callbacks) {
   }
 
   // Todos los alimentos del pedido fueron preparados exitosamente
+  callbacks.onActualizarEstado(pedidoId, "🎉 ¡Pedido completo y listo para entregar!", 100);
+}
   callbacks.onActualizarEstado(pedidoId, "🎉 ¡Pedido completo y listo para entregar!", 100);
 }
 
@@ -110,7 +171,6 @@ const btnPedidoGrande = document.getElementById("btn-pedido-grande");
 
 // Envía la lista de IDs a la lógica de cocina
 function simularEnvioPedido(idsProductos) {
-  // Uso de FIND para armar la lista de ítems a partir de los IDs
   const items = idsProductos.map((id) => buscarPlatilloPorId(id)).filter(Boolean);
 
   if (items.length === 0) return;
@@ -131,6 +191,44 @@ function simularEnvioPedido(idsProductos) {
       document.getElementById(`alerta-${pedidoId}`).style.display = "none";
     }
   });
+}
+
+// 4. INICIALIZADOR DE INTERFAZ (DOM COCINA)
+// ==========================================
+export function inicializarModuloCocina(contenedorSelector = 'body') {
+  const root = document.querySelector(contenedorSelector);
+
+  if (!root) {
+    console.error(`No se encontró el contenedor: ${contenedorSelector}`);
+    return;
+  }
+
+  const form = root.querySelector("#form-producto");
+  });
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const id = inputId.value;
+    const nombre = inputNombre.value;
+    const precio = parseFloat(inputPrecio.value);
+    const categoria = selectCategoria.value;
+
+    if (id) {
+      editarProductoLogica(parseInt(id), nombre, precio, categoria);
+    } else {
+      agregarProductoLogica(nombre, precio, categoria);
+    }
+
+    resetearFormulario();
+    aplicarFiltros();
+  });
+
+  inputBuscar.addEventListener("input", aplicarFiltros);
+  selectFiltro.addEventListener("change", aplicarFiltros);
+  btnCancelar.addEventListener("click", resetearFormulario);
+
+  renderizarTabla();
 }
 
 // Inyección dinámica de la tarjeta del pedido en la pantalla de cocina
@@ -167,12 +265,11 @@ function renderizarTarjetaPedido(pedidoId, numPedido, items) {
 // Eventos para simular comandas / llegada de pedidos simultáneos
 if (btnPedidoExpress && btnPedidoGrande) {
   btnPedidoExpress.addEventListener("click", () => {
-    // Pedido 1: Café (bebida) + Cheesecake (postre)
     simularEnvioPedido([1, 4]);
   });
 
   btnPedidoGrande.addEventListener("click", () => {
-    // Pedido 2: Hamburguesa (platillo) + Té Verde (bebida) + Pastel (postre)
     simularEnvioPedido([5, 3, 2]);
   });
+}
 }
