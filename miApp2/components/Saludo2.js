@@ -5,8 +5,8 @@ export const Saludo2=()=>{
         <View>  
 
             <Text>  Hola RN: Soy un componente Compuesto</Text>
-            <Image source={require('../assets')}/>
-            <Button tittle="Pesiona para Saludar"/>
+            <Image source={require('../assets/wave.png')} />
+            <Button title="Pesiona para Saludar"/>
             
         </View>
         
