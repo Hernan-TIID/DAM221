@@ -11,7 +11,7 @@ export default function App() {
   return (
     <View style={styles.container}>
       
-      <Text>Hola Mundo ReactNative!</Text>
+      {/* <Text>Hola Mundo ReactNative!</Text>
       <Image source={require('./assets/wave.png')}/>
       <Text>  ----------------------------</Text>
       <Saludo></Saludo>
@@ -19,8 +19,17 @@ export default function App() {
       <Text>  ----------------------------</Text>
       <Saludo2></Saludo2>
       <Saludo2/>
+      */}
 
-      <Perfil></Perfil>
+      <Perfil nombre="LULU" carrera="TIID" materia="movil" cuatri={"4"} ></Perfil>
+
+      
+      <Perfil nombre="RENATA" carrera="TIID" materia="movil" cuatri={"4"}></Perfil>
+      
+
+      <Perfil nombre="LUISA" carrera="TIID" materia="movil" cuatri={"4"}/>
+      
+
       <StatusBar style="auto" />
     </View>
   );

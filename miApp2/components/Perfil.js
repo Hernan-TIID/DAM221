@@ -1,19 +1,29 @@
-import { Text, View, Button, Image } from 'react-native';
+import { Text, View, Button, Image , StyleSheet} from 'react-native';
+import { useState } from 'react';
 
-export const Perfil = () => {
+export const Perfil = ({nombre,carrera,materia,cuatri}) => {
+  
+  const[mostrar,setMostrar]= useState(false);
+
   return (
     <View>
-      <Image source={require('../assets/images.png')} />
+    
+      <Text>{nombre}</Text>
       
-      <Button title="Nombre:" />
-      <Text>Hernan</Text>
-      <Button title="Carrera: " />
-      <Text>Ingeniería en Tecnologías de la Información e Innovacion Digital</Text>
-      <Button title="Materia: " />
-      <Text>Desarrollo Móvil</Text>
-      <Button title="Cuatrimestre: " />
-      <Text>Cuarto Cuatrimestre</Text>
-      <Image source={require('../assets/wave.png')} />
+      
+    { mostrar &&
+    <>
+      <Text>{carrera}</Text>
+      <Text>{materia}</Text>     
+      <Text>{cuatri}</Text>
+    </>
+    }  
+    <Button title="Ver perfil" onPress={()=>setMostrar(!mostrar)}></Button>
     </View>
   );
 };
+
+const estilos= StyleSheet.create({
+
+
+})
