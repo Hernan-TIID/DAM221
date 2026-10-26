@@ -1,47 +1,26 @@
-//Zona de importaciones
+// 1. Zona de importaciones 
 
-import { StatusBar } from 'expo-status-bar';
-import { Saludo } from './components/Saludo';
 import { StyleSheet, Text, View, Image } from 'react-native';
-import { Saludo2 } from './components/Saludo2';
-import { Perfil } from './components/Perfil';
+import MenuScreen from './Screens/MenuScreen';
 
-//Zona render o main
+// 2. Zona render o Main
+
 export default function App() {
   return (
     <View style={styles.container}>
-      
-      {/* <Text>Hola Mundo ReactNative!</Text>
-      <Image source={require('./assets/wave.png')}/>
-      <Text>  ----------------------------</Text>
-      <Saludo></Saludo>
-      <Saludo/>
-      <Text>  ----------------------------</Text>
-      <Saludo2></Saludo2>
-      <Saludo2/>
-      */}
-
-      <Perfil nombre="LULU" carrera="TIID" materia="movil" cuatri={"4"} ></Perfil>
-
-      
-      <Perfil nombre="RENATA" carrera="TIID" materia="movil" cuatri={"4"}></Perfil>
-      
-
-      <Perfil nombre="LUISA" carrera="TIID" materia="movil" cuatri={"4"}/>
-      
-
-      <StatusBar style="auto" />
+      <MenuScreen/>
     </View>
   );
 }
 
-//Zona de estilos y posicionamiento
+
+// 3. Zona de estilos y posicionamientos
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    flexDirection: 'column',
     justifyContent: 'center',
-    
-  },
+    alignItems: 'center'
+  }
 });
