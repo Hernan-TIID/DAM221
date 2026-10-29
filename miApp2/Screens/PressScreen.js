@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#f2f2f2',
+    backgroundColor: '#f2f2f3',
   },
   titulo: {
     fontSize: 24,
@@ -64,13 +64,13 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   boton: {
-    backgroundColor: '#319b80',
+    backgroundColor: '#319b81',
     padding: 15,
     borderRadius: 10,
     marginTop: 15,
   },
   botonPresionado: {
-    backgroundColor: '#1e6655',
+    backgroundColor: '#1e6656',
   },
   textoBoton: {
     color: 'white',
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   },
   separador: {
     height: 2,
-    backgroundColor: '#cccccc',
+    backgroundColor: '#cccccf',
     width: '90%',
     marginVertical: 35,
   },
