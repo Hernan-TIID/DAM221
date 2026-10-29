@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "dependencies": {
-    "expo": "^57.0.29",
+    "expo": "^57.0.31",
     "expo-status-bar": "~57.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

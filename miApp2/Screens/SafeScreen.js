@@ -1,89 +1,109 @@
+//1. Zona de importaciones
 
-// 1. Zona de importaciones 
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  SafeAreaView
+} from 'react-native';
 
-import { StyleSheet, Text, View, Image , ScrollView, SafeAreaView} from 'react-native';
-
-// 2. Zona render o Main
+//2. Zona Render o main
 
 export default function SafeScreen() {
-  
-    const canciones=[
-      '1','2','3','4','5','6','7','8','9,'
 
-    ]
-    return(
-      <SafeAreaView>
-        style= {styles.container}
-       <Text style={styles.titulo}> MUSICA</Text>
+  const canciones = [
+  '1','2','3','4','5','6','7',
+  ];
 
-       <View >  
-       style = {styles.reproductor}
-       <Text style={styles.titulo}> Lista de musica</Text>
-      <Text>La musica mas escuchada</Text>
-       </View>
+  return (
+    <SafeAreaView style={styles.container}>
 
-      <Text style = {styles.subtitulo}>Canciones disponibles </Text>
-      <ScrollView contentContainerStyle ={styles.contenidoLista} showsVerticalScrollIndicator={true}>
-      {canciones.map((item, index)=>(
-        <View key = {index} style={styles.tarjeta}>
-          <Text style = {styles.textoLista}>{item}</Text>
+      <Text style={styles.titulo}>
+        LA MUSICA DE LOS BROS
+      </Text>
 
-        </View>
+      <View style={styles.reproductor}>
+        <Text style={styles.texto}>LISTA DE CANCIONES</Text>
+        <Text>LAS MAS TOPS</Text>
+      </View>
 
-      )
-      )
-      }
+      <Text style={styles.subtitulo}>
+        Canciones disponibles
+      </Text>
+
+      <ScrollView
+        style={styles.lista}
+        contentContainerStyle={styles.contenidoLista}
+        showsVerticalScrollIndicator={true}
+      >
+        {canciones.map((item, index) => (
+          <View key={index} style={styles.tarjeta}>
+            <Text style={styles.textoLista}>{item}</Text>
+          </View>
+        ))}
       </ScrollView>
 
-  </SafeAreaView>   
- );
-
-
+    </SafeAreaView>
+  );
 }
-// 3. Zona de estilos y posicionamientos 
+
+//3. Zona de estilos y posiciones/
+
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
-    padding: 20
+    backgroundColor: '#3d45e9',
+    padding: 20,
   },
-  titulo:{
+
+  titulo: {
     fontSize: 26,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 20
+    marginBottom: 20,
   },
-  reproductor:{
+
+  reproductor: {
     backgroundColor: '#ffffff',
-    padding:20,
-    borderRadius:15,
-    alignItems: 'center'
+    padding: 20,
+    borderRadius: 15,
+    alignItems: 'center',
   },
-  texto:{
+
+  texto: {
     fontSize: 22,
     fontWeight: 'bold',
-    marginBottom:10
+    marginBottom: 10,
   },
- subtitulo:{
-  fontSize: 20,
+
+  subtitulo: {
+    fontSize: 20,
     fontWeight: 'bold',
     marginTop: 20,
-    marginBottom:10,
-    textAlign: 'center'
- },
- lista:{
-  flex:1
- },
+    marginBottom: 10,
+    textAlign: 'center',
+  },
 
- tarjeta:{
-  backgroundColor: '#ffffff',
-  padding:20,
-  marginBottom: 10,
-  borderRadius:15
- },
- textoLista:{
-  fontSize:18,
-  textAlign:'center'
- },
+  lista: {
+    flex: 1,
+  },
+
+  contenidoLista: {
+    paddingBottom: 30,
+  },
+
+  tarjeta: {
+    backgroundColor: '#ffffff',
+    padding: 20,
+    marginBottom: 10,
+    borderRadius: 15,
+  },
+
+  textoLista: {
+    fontSize: 18,
+    textAlign: 'center',
+  },
 
 });
