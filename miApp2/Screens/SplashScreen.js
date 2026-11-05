@@ -2,9 +2,8 @@
 // 1. Importaciones
 import { useState, useEffect } from 'react';
 
-import {View, Text, ImageBackground, Pressable, StyleSheet} from 'react-native';
+import {View, Text, ImageBackground, Pressable, StyleSheet,} from 'react-native';
 
-// 2. Componente principal
 export default function SplashScreen() {
 
   // Estado para cambiar entre día y noche
@@ -15,12 +14,9 @@ export default function SplashScreen() {
 
   // Temporizador del Splash Screen
   useEffect(() => {
-    const temporizador = setTimeout(() => {
-      setCargando(false);
-    }, 2000);
+    const temporizador = setTimeout(() => {setCargando(false);}, 2000);
 
-    return () => clearTimeout(temporizador);
-  }, []);
+    return () => clearTimeout(temporizador);}, []);
 
   // Pantalla de bienvenida
   if (cargando) {
@@ -38,15 +34,9 @@ export default function SplashScreen() {
   }
 
   return (
-    <ImageBackground
-      source={
-        noche
-          ? require('../assets/noche.jpg')
-          : require('../assets/dia.jpg')
-      }
-      style={styles.background}
-      resizeMode="cover"
-    >
+    <ImageBackground source={noche ? require('../assets/noche.jpg') 
+      : require('../assets/dia.jpg')}
+      style={styles.background}resizeMode="cover">
 
       <View style={styles.overlay}>
 
