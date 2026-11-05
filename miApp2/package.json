@@ -4,11 +4,12 @@
   "main": "index.js",
   "dependencies": {
     "expo": "^57.0.31",
+    "expo-splash-screen": "~57.0.10",
     "expo-status-bar": "~57.0.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-native": "^0.72.17",
-    "react-native-web": "0.17.1"
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-web": "^0.21.2"
   },
   "scripts": {
     "start": "expo start",
