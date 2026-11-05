@@ -1,160 +1,141 @@
+// 1. Importaciones
+import { useState, useEffect } from 'react';
 
-// 1. Zona de importaciones
+import {View, Text, ImageBackground, Pressable, StyleSheet} from 'react-native';
 
-import { useState } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  FlatList,
-  SectionList,
-  TouchableOpacity,
-  SafeAreaView
-} from 'react-native';
+// 2. Componente principal
+export default function SplashScreen() {
 
-// 2. Zona Render o Main
+  // Estado para cambiar entre día y noche
+  const [noche, setNoche] = useState(false);
 
-export default function FlatScreen() {
+  // Estado para controlar el Splash Screen
+  const [cargando, setCargando] = useState(true);
 
-  const [vistaActual, setVistaActual] = useState('flat');
+  // Temporizador del Splash Screen
+  useEffect(() => {
+    const temporizador = setTimeout(() => {
+      setCargando(false);
+    }, 2000);
 
-  const [serviciosFlat] = useState([
-    { id: '1', titulo: 'Clase de ingles', categoria: 'Educacion' },
-    { id: '2', titulo: 'Reparacion de PC', categoria: 'Tecnologia' }
-  ]);
+    return () => clearTimeout(temporizador);
+  }, []);
 
-  const [secciones] = useState([
-    {
-      title: 'Educacion',
-      data: ['Clase de ingles', 'Asesorias de matematicas']
-    },
-    {
-      title: 'Tecnologia',
-      data: ['Reparacion de PC', 'Redes']
-    },
-  ]);
+  // Pantalla de bienvenida
+  if (cargando) {
+    return (
+      <View style={styles.splash}>
+        <Text style={styles.splashTitle}>
+          Bienvenido
+        </Text>
+
+        <Text style={styles.splashDescription}>
+          Mi Aplicación
+        </Text>
+      </View>
+    );
+  }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ImageBackground
+      source={
+        noche
+          ? require('../assets/noche.jpg')
+          : require('../assets/dia.jpg')
+      }
+      style={styles.background}
+      resizeMode="cover"
+    >
 
-      <View style={styles.nav}>
+      <View style={styles.overlay}>
 
-        <TouchableOpacity
-          style={styles.btn}
-          onPress={() => setVistaActual('flat')}
+        <Text style={styles.title}>
+          Ejemplo de Background
+        </Text>
+
+        <Text style={styles.description}>
+          {noche
+            ? 'Actualmente es de noche'
+            : 'Actualmente es de día'}
+        </Text>
+
+        <Pressable
+          style={styles.button}
+          onPress={() => setNoche(!noche)}
         >
-          <Text style={styles.txt}>FlatList</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.btn}
-          onPress={() => setVistaActual('section')}
-        >
-          <Text style={styles.txt}>SectionList</Text>
-        </TouchableOpacity>
+          <Text style={styles.buttonText}>
+            {noche ? 'Cambiar a día' : 'Cambiar a noche'}
+          </Text>
+        </Pressable>
 
       </View>
 
-      {vistaActual === 'flat' ? (
-
-        <View style={styles.content}>
-
-          <Text style={styles.sub}>Flatlist</Text>
-
-          <FlatList
-            data={serviciosFlat}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <View style={styles.card}>
-                <Text>
-                  {item.titulo} ({item.categoria})
-                </Text>
-              </View>
-            )}
-          />
-
-        </View>
-
-      ) : (
-
-        <View style={styles.content}>
-
-          <Text style={styles.sub}>Sectionlist</Text>
-
-          <SectionList
-            sections={secciones}
-            keyExtractor={(item, index) => item + index}
-            renderItem={({ item }) => (
-              <View style={styles.card}>
-                <Text>{item}</Text>
-              </View>
-            )}
-            renderSectionHeader={({ section: { title } }) => (
-              <Text style={styles.header}>{title}</Text>
-            )}
-          />
-
-        </View>
-
-      )}
-
-    </SafeAreaView>
+    </ImageBackground>
   );
 }
 
-// 3. Zona de estilos y posiciones
-
+// 3. Estilos
 const styles = StyleSheet.create({
 
-  container: {
+  splash: {
     flex: 1,
-    padding: 15,
-    backgroundColor: '#fff'
-  },
-
-  nav: {
-    flexDirection: 'row',
+    width: '100%',
+    backgroundColor: '#111827',
     justifyContent: 'center',
-    marginBottom: 15
+    alignItems: 'center',
   },
 
-  btn: {
-    backgroundColor: '#2563eb',
-    padding: 8,
-    marginHorizontal: 5,
-    borderRadius: 4
+  splashTitle: {
+    color: '#FFFFFF',
+    fontSize: 30,
+    fontWeight: 'bold',
   },
 
-  content: {
-    flex: 1
+  splashDescription: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    marginTop: 10,
   },
 
-  sub: {
+  background: {
+    flex: 1,
+    width: '100%',
+    alignSelf: 'stretch',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  overlay: {
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    padding: 25,
+    borderRadius: 15,
+    alignItems: 'center',
+    marginHorizontal: 20,
+  },
+
+  title: {
+    color: '#FFFFFF',
+    fontSize: 25,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+
+  description: {
+    color: '#FFFFFF',
     fontSize: 16,
+    marginVertical: 20,
+    textAlign: 'center',
+  },
+
+  button: {
+    backgroundColor: '#2563EB',
+    padding: 14,
+    borderRadius: 10,
+  },
+
+  buttonText: {
+    color: '#FFFFFF',
     fontWeight: 'bold',
-    marginBottom: 8
   },
-
-  card: {
-    backgroundColor: '#f8fafc',
-    padding: 10,
-    marginVertical: 3,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderRadius: 4
-  },
-
-  header: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    backgroundColor: '#e2e8f0',
-    padding: 6,
-    marginTop: 8
-  },
-
-  txt: {
-    color: '#fff',
-    fontWeight: 'bold'
-  }
 
 });
