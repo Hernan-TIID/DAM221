@@ -34,7 +34,7 @@ export default function TextInputScreen(){
             style={styles.input}
             placeholder='Escribe tu nombre'
             value={nombre}
-            onChange={setNombre}
+            onChangeText={setNombre}
             />
             <Text>Escribiste: {nombre}</Text>
 
