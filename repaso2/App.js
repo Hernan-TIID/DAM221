@@ -8,7 +8,7 @@ export default function App() {
   const [genero, setGenero] = useState('');
   const [libros, setLibros] = useState([]);
   const [cargando, setCargando] = useState(false);
-
+  
   useEffect(() => {
     setTimeout(() => setIsSplash(false), 2000);
   }, []);
