@@ -4,18 +4,18 @@ import { StyleSheet, Text, View, TextInput, Switch, Pressable, Alert, ScrollView
 export default function App() {
   const [nombre, setNombre] = useState('');
   const [carrera, setCarrera] = useState('');
-  const [semestre, setCuatrimestre] = useState('');
+  const [cuatrimestre, setCuatrimestre] = useState('');
   const [taller, setTaller] = useState(false);
   const [constancia, setConstancia] = useState(false);
   const [deportes, setDeportes] = useState(false);
 
   const enviarRegistro = () => {
-    if (!nombre.trim() || !carrera.trim() || !semestre.trim()) {
+    if (!nombre.trim() || !carrera.trim() || !cuatrimestre.trim()) {
       Alert.alert('Campos incompletos', 'Debes llenar todos los campos.');
       return;
     }
     if (isNaN(cuatrimestre)) {
-      Alert.alert('Error', 'El semestre debe ser un número.');
+      Alert.alert('Error', 'El cuatrimestre debe ser un número.');
       return;
     }
 
@@ -31,7 +31,7 @@ export default function App() {
 
       <TextInput style={styles.input} placeholder="Nombre completo" value={nombre} onChangeText={setNombre} />
       <TextInput style={styles.input} placeholder="Carrera" value={carrera} onChangeText={setCarrera} />
-      <TextInput style={styles.input} placeholder="Cuatrimestre" keyboardType="numeric" value={semestre} onChangeText={setCuatrimestre} />
+      <TextInput style={styles.input} placeholder="Cuatrimestre" keyboardType="numeric" value={cuatrimestre} onChangeText={setCuatrimestre} />
 
       <Text style={styles.sectionTitle}>Opciones</Text>
 
