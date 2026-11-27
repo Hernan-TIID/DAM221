@@ -3,14 +3,21 @@ import { SafeAreaView,View,Text, TextInput, Pressable, StyleSheet,} from 'react-
 import { useLocalSearchParams } from 'expo-router';
 
 
+
 export default function ActualizarUsuarioScreen() {
 
-const params=useLocalSearchParams();
+  const params=useLocalSearchParams();
 
-const [nombre, setNombre] = useState(params.nombre);
-const [edad, setEdad] = useState(params.edad);
+  const[nombre,setNombre]=useState(params.nombre);
+  const[edad,setEdad]=useState(params.edad);
+  const actualizarUsuario=()=>{}
+  
 
-const actualizarUsuario=()=>{}
+
+
+
+
+
 
   return (
     <SafeAreaView style={styles.container}>
